@@ -1,0 +1,960 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 7.9.0.final using JasperReports Library version 6.16.0-48579d909b7943b64690c65c71e07e0b80981928  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="bill_verification_report" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="15" bottomMargin="15" uuid="04504881-0c81-48fa-a2a5-50f6137a4724">
+	<property name="ireport.zoom" value="2.143588810000002"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="HRMS-TEST"/>
+	<parameter name="P_EMP_CODES" class="java.lang.String">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="P_START_DATE" class="java.lang.String">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="P_END_DATE" class="java.lang.String">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="P_DESIGNATION_VIEW" class="java.lang.String"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["D://REPORTS//HRMS_REPORTS_sahee_mam_new//ALL_REPORTS//"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT 
+  E.ID, 
+  E.EMP_CODE EMPLOYEE_ID, 
+  E.EMP_NAME EMPLOYEE_NAME, 
+  ATTN_DATE, 
+  to_char(
+    (ATTN_DATE), 
+    'DAY'
+  ), 
+  ATTN_DAY_STS_TYPE STATUS, 
+  (IN_TIME) IN_DATE, 
+  (OUT_TIME) OUT_DATE, 
+  IN_TIME, 
+  OUT_TIME, 
+  (OUT_TIME - IN_TIME):: varchar get_day_diff, 
+  (
+    SELECT 
+      F.TITLE 
+    FROM 
+      HR_TL_SHFT_DTL F 
+    WHERE 
+      ID = M.HR_TL_SHFT_DTL_ID
+  ) SHIFT, 
+  CASE WHEN $P{P_DESIGNATION_VIEW} = '1' THEN (E.DESIGNATION) ELSE '##.##' END DESIGNATION, 
+  OPERATING_UNIT_TITLE, 
+  SECTION_TITLE, 
+  DEPARTMENT_TITLE, 
+  OT_HOUR, 
+  M.REMARKS, 
+  (
+    SELECT 
+      CASE WHEN trim(
+        (
+          substring(
+            F.TITLE 
+            from 
+              '-(.*)P'
+          )
+        )
+      ) like '%.30' THEN make_time(
+        cast(
+          trim(
+            substring(
+              F.TITLE 
+              from 
+                '-(.*)P'
+            )
+          ):: float as integer
+        )+ 12, 
+        30, 
+        0
+      ) WHEN (
+        trim(
+          substring(
+            F.TITLE 
+            from 
+              '-(.*)P'
+          )
+        )
+      ) like '%:30' THEN make_time(
+        cast(
+          trim(
+            substring(
+              F.TITLE 
+              from 
+                '-(.*):'
+            )
+          ) as integer
+        )+ 12, 
+        30, 
+        0
+      ) WHEN (
+        trim(
+          substring(
+            F.TITLE 
+            from 
+              '-(.*)P'
+          )
+        )
+      ) like '%:00' THEN make_time(
+        cast(
+          trim(
+            substring(
+              F.TITLE 
+              from 
+                '-(.*):'
+            )
+          ) as integer
+        )+ 12, 
+        0, 
+        0
+      ) WHEN (
+        trim(
+          substring(
+            F.TITLE 
+            from 
+              '-(.*)A'
+          )
+        )
+      ) like '%.30' THEN make_time(
+        cast(
+          trim(
+            substring(
+              F.TITLE 
+              from 
+                '-(.*)A'
+            )
+          ):: float as integer
+        ), 
+        30, 
+        0
+      ) WHEN (
+        trim(
+          substring(
+            F.TITLE 
+            from 
+              '-(.*)A'
+          )
+        )
+      ) like '%:30' THEN make_time(
+        cast(
+          trim(
+            substring(
+              F.TITLE 
+              from 
+                '-(.*):'
+            )
+          ) as integer
+        ), 
+        30, 
+        0
+      ) WHEN (
+        trim(
+          substring(
+            F.TITLE 
+            from 
+              '-(.*)A'
+          )
+        )
+      ) like '%:00' THEN make_time(
+        cast(
+          trim(
+            substring(
+              F.TITLE 
+              from 
+                '-(.*):'
+            )
+          ) as integer
+        ), 
+        0, 
+        0
+      ) ELSE make_time(
+        cast(
+          (
+            trim(
+              substring(
+                F.TITLE 
+                from 
+                  '-(.*)P'
+              )
+            ):: float
+          ) as integer
+        )+ 12, 
+        0, 
+        0
+      ) END 
+    from 
+      HR_TL_SHFT_DTL F 
+    WHERE 
+      F.ID = M.HR_TL_SHFT_DTL_ID
+  ) shift_out_time 
+FROM 
+  PROC_OUT_DT_ATTN M, 
+  hr_cr_EMP_PRIMARY_ASSGNMNT E 
+WHERE 
+  1 = 1 
+  AND E.ID = M.HR_CR_EMP_ID 
+  AND ATTN_DATE BETWEEN TO_DATE ($P{P_START_DATE}, 'yyyy-MM-dd') 
+  AND TO_DATE ($P{P_END_DATE}, 'yyyy-MM-dd') 
+  AND (E.EMP_CODE = $P{P_EMP_CODES}) 
+ORDER BY 
+  (E.EMP_CODE), 
+  (ATTN_DATE)]]>
+	</queryString>
+	<field name="id" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.name" value="id"/>
+		<property name="com.jaspersoft.studio.field.label" value="id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="hr_cr_emp_primary_assgnmnt"/>
+	</field>
+	<field name="employee_id" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="employee_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="employee_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="hr_cr_emp_primary_assgnmnt"/>
+	</field>
+	<field name="employee_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="employee_name"/>
+		<property name="com.jaspersoft.studio.field.label" value="employee_name"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="hr_cr_emp_primary_assgnmnt"/>
+	</field>
+	<field name="attn_date" class="java.sql.Date">
+		<property name="com.jaspersoft.studio.field.name" value="attn_date"/>
+		<property name="com.jaspersoft.studio.field.label" value="attn_date"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="proc_out_dt_attn"/>
+	</field>
+	<field name="to_char" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="to_char"/>
+		<property name="com.jaspersoft.studio.field.label" value="to_char"/>
+	</field>
+	<field name="status" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="status"/>
+		<property name="com.jaspersoft.studio.field.label" value="status"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="proc_out_dt_attn"/>
+	</field>
+	<field name="in_date" class="java.sql.Time">
+		<property name="com.jaspersoft.studio.field.name" value="in_date"/>
+		<property name="com.jaspersoft.studio.field.label" value="in_date"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="proc_out_dt_attn"/>
+	</field>
+	<field name="out_date" class="java.sql.Time">
+		<property name="com.jaspersoft.studio.field.name" value="out_date"/>
+		<property name="com.jaspersoft.studio.field.label" value="out_date"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="proc_out_dt_attn"/>
+	</field>
+	<field name="in_time" class="java.sql.Time">
+		<property name="com.jaspersoft.studio.field.name" value="in_time"/>
+		<property name="com.jaspersoft.studio.field.label" value="in_time"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="proc_out_dt_attn"/>
+	</field>
+	<field name="out_time" class="java.sql.Time">
+		<property name="com.jaspersoft.studio.field.name" value="out_time"/>
+		<property name="com.jaspersoft.studio.field.label" value="out_time"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="proc_out_dt_attn"/>
+	</field>
+	<field name="get_day_diff" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="get_day_diff"/>
+		<property name="com.jaspersoft.studio.field.label" value="get_day_diff"/>
+	</field>
+	<field name="shift" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="shift"/>
+		<property name="com.jaspersoft.studio.field.label" value="shift"/>
+	</field>
+	<field name="designation" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="designation"/>
+		<property name="com.jaspersoft.studio.field.label" value="designation"/>
+	</field>
+	<field name="operating_unit_title" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="operating_unit_title"/>
+		<property name="com.jaspersoft.studio.field.label" value="operating_unit_title"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="hr_cr_emp_primary_assgnmnt"/>
+	</field>
+	<field name="section_title" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="section_title"/>
+		<property name="com.jaspersoft.studio.field.label" value="section_title"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="hr_cr_emp_primary_assgnmnt"/>
+	</field>
+	<field name="department_title" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="department_title"/>
+		<property name="com.jaspersoft.studio.field.label" value="department_title"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="hr_cr_emp_primary_assgnmnt"/>
+	</field>
+	<field name="ot_hour" class="java.lang.Double">
+		<property name="com.jaspersoft.studio.field.name" value="ot_hour"/>
+		<property name="com.jaspersoft.studio.field.label" value="ot_hour"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="proc_out_dt_attn"/>
+	</field>
+	<field name="remarks" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="remarks"/>
+		<property name="com.jaspersoft.studio.field.label" value="remarks"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="proc_out_dt_attn"/>
+	</field>
+	<field name="shift_out_time" class="java.sql.Time">
+		<property name="com.jaspersoft.studio.field.name" value="shift_out_time"/>
+		<property name="com.jaspersoft.studio.field.label" value="shift_out_time"/>
+	</field>
+	<variable name="TOTAL_OT_SUM" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$F{out_time}.getTime()>$F{shift_out_time}.getTime()?($F{out_time}.getTime() - $F{shift_out_time}.getTime()):00]]></variableExpression>
+	</variable>
+	<variable name="TOTAL_WORK_TIME_SUM" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$F{out_time}.getTime() - $F{in_time}.getTime()]]></variableExpression>
+	</variable>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="31" splitType="Stretch">
+			<subreport>
+				<reportElement x="-27" y="0" width="555" height="14" uuid="969a881b-0d9f-41c5-bd43-57f5bb273678"/>
+				<subreportParameter name="P_EMP_CODES">
+					<subreportParameterExpression><![CDATA[$P{P_EMP_CODES}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA[$P{SUBREPORT_DIR}+"subheader.jasper"]]></subreportExpression>
+			</subreport>
+			<staticText>
+				<reportElement positionType="Float" x="9" y="18" width="526" height="13" uuid="52d8e1f8-2aab-4041-a7a1-016b63e1ee3f"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10" isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Bill Verification Report]]></text>
+			</staticText>
+			<line>
+				<reportElement positionType="Float" x="9" y="16" width="525" height="1" uuid="8c286b3d-45cf-4b24-af80-6e3dbbb509df"/>
+				<graphicElement>
+					<pen lineWidth="0.25"/>
+				</graphicElement>
+			</line>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="46" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<staticText>
+				<reportElement x="350" y="1" width="72" height="10" uuid="536b2a95-0a8a-4a38-a360-cd56cc440fbc"/>
+				<box leftPadding="0">
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="7" isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Department]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="119" y="11" width="150" height="9" uuid="340bb75b-a2be-4243-8f33-f0580f7a064c"/>
+				<box leftPadding="0">
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="7" isBold="false" pdfFontName="Helvetica-Bold"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{employee_id}==null? ":":":  "+ $F{employee_id}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="119" y="20" width="150" height="10" uuid="83362b0c-6ad3-4f1a-ba43-32fb5c9ee880"/>
+				<box leftPadding="0">
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="7" isBold="false" pdfFontName="Helvetica-Bold"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{designation}==null? ":":":  "+ $F{designation}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="10" y="11" width="70" height="9" uuid="23fa60db-f77a-4660-b87a-40418fac5938"/>
+				<box leftPadding="0">
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="7" isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Employee ID]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="422" y="1" width="114" height="10" uuid="9beea344-b738-48ac-b839-8f1106b21df1"/>
+				<box leftPadding="0">
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="7" isBold="false" pdfFontName="Helvetica-Bold"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{department_title}==null?":":":  "+ $F{department_title}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="10" y="20" width="70" height="10" uuid="1ada3545-062e-4f4c-ae33-c775511b8839"/>
+				<box leftPadding="0">
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="7" isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Designation]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="10" y="1" width="70" height="10" uuid="5a81d928-2e19-4413-8032-c7108e24dc03"/>
+				<box leftPadding="0">
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="7" isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Employee Name]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="422" y="11" width="114" height="9" uuid="c4ce3def-a40b-43ff-a0d6-59c9fd3b4f57"/>
+				<box leftPadding="0">
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="7" isBold="false" pdfFontName="Helvetica-Bold"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{section_title}==null?":":":  "+ $F{section_title}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="422" y="20" width="114" height="10" uuid="565696b1-2a49-4677-9ff9-bf82cbadf5d4"/>
+				<box leftPadding="0">
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="7" isBold="false" pdfFontName="Helvetica-Bold"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_START_DATE}==null?":":":  "+ $P{P_START_DATE}+" To "+$P{P_END_DATE}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="350" y="11" width="72" height="9" uuid="57714611-21a2-4da1-90f0-6f3ef405696e"/>
+				<box leftPadding="0">
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="7" isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Section]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="119" y="1" width="150" height="10" uuid="9cd11f83-9237-44b7-b376-ff97bcc22e1d"/>
+				<box leftPadding="0">
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{employee_name}==null? ":":":  "+ $F{employee_name}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="350" y="20" width="72" height="10" uuid="bb095cf2-1dbe-430b-b828-75039fdedde1"/>
+				<box leftPadding="0">
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="7" isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Report Duration]]></text>
+			</staticText>
+			<textField pattern="MMMMM dd, yyyy">
+				<reportElement x="9" y="36" width="412" height="9" uuid="00d3ec95-5a35-4aa4-bccb-46741640f1a5"/>
+				<box leftPadding="2"/>
+				<textElement verticalAlignment="Middle">
+					<font size="7"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Print Date and Time: "+(new SimpleDateFormat("EEEEE, d MMMMM yyyy hh:mm:ss aaa")).format(new java.util.Date())]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="16" splitType="Stretch">
+			<staticText>
+				<reportElement mode="Opaque" x="119" y="1" width="58" height="13" forecolor="#080707" backcolor="#D1D0CE" uuid="74084b82-1dae-47e9-a4e0-51a46e3c4d83"/>
+				<box>
+					<pen lineWidth="0.25" lineStyle="Solid" lineColor="#080707"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Shift]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="460" y="1" width="76" height="13" forecolor="#080707" backcolor="#D1D0CE" uuid="920c0869-7951-4235-9d2e-c1a2868a5915"/>
+				<box>
+					<pen lineWidth="0.25" lineStyle="Solid" lineColor="#080707"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Remarks]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="10" y="1" width="44" height="13" forecolor="#080707" backcolor="#D1D0CE" uuid="a14fbc20-1a86-49a0-bfb9-0fcc62b9b245"/>
+				<box>
+					<pen lineWidth="0.25" lineStyle="Solid" lineColor="#080707"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Shift Date]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="231" y="1" width="60" height="13" forecolor="#080707" backcolor="#D1D0CE" uuid="594537c3-3e90-4f39-99bc-fb22be288b89">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.25" lineStyle="Solid" lineColor="#080707"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[IN ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="395" y="1" width="65" height="13" forecolor="#080707" backcolor="#D1D0CE" uuid="05b3c9f5-4344-4c11-b180-ca02bf67ca08">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.25" lineStyle="Solid" lineColor="#080707"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[OT]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="291" y="1" width="55" height="13" forecolor="#080707" backcolor="#D1D0CE" uuid="a5c90514-29e6-4313-9fce-c2095f5db3c9">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.25" lineStyle="Solid" lineColor="#080707"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[OUT ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="346" y="1" width="49" height="13" forecolor="#080707" backcolor="#D1D0CE" uuid="8d27c7c1-f5fd-496e-9ddf-13787de18a4c">
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.25" lineStyle="Solid" lineColor="#080707"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Work Time]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="54" y="1" width="65" height="13" forecolor="#080707" backcolor="#D1D0CE" uuid="33b49d46-0381-43d5-af8e-36636ffb324c"/>
+				<box>
+					<pen lineWidth="0.25" lineStyle="Solid" lineColor="#080707"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Day]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="177" y="1" width="54" height="13" forecolor="#080707" backcolor="#D1D0CE" uuid="08c241d4-33c6-4d57-9f80-fb8d0d6e2acd"/>
+				<box>
+					<pen lineWidth="0.25" lineStyle="Solid" lineColor="#080707"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Status]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="18" splitType="Stretch">
+			<textField>
+				<reportElement x="54" y="0" width="65" height="18" uuid="c99c6281-7d5c-4d44-b430-a153bbe702f9"/>
+				<box>
+					<pen lineWidth="0.25" lineStyle="Solid" lineColor="#050505"/>
+					<topPen lineStyle="Solid"/>
+					<leftPen lineStyle="Solid"/>
+					<bottomPen lineStyle="Solid"/>
+					<rightPen lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{to_char}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true">
+				<reportElement x="10" y="0" width="44" height="18" uuid="749979ff-9a8e-460a-ad9c-23dd66f735cd"/>
+				<box leftPadding="3">
+					<pen lineWidth="0.25" lineStyle="Solid" lineColor="#050505"/>
+					<topPen lineStyle="Solid"/>
+					<leftPen lineStyle="Solid"/>
+					<bottomPen lineStyle="Solid"/>
+					<rightPen lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7" isBold="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{attn_date}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="119" y="0" width="58" height="18" uuid="40f874bb-a0d6-430a-9019-8c9f20dfa01a"/>
+				<box leftPadding="2">
+					<pen lineWidth="0.25" lineStyle="Solid" lineColor="#050505"/>
+					<topPen lineStyle="Solid"/>
+					<leftPen lineStyle="Solid"/>
+					<bottomPen lineStyle="Solid"/>
+					<rightPen lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7" isBold="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{shift}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="177" y="0" width="54" height="18" uuid="530523e1-05a6-4dd9-b49f-c1c8c0f1e87f"/>
+				<box leftPadding="3">
+					<pen lineWidth="0.25" lineStyle="Solid" lineColor="#050505"/>
+					<topPen lineStyle="Solid"/>
+					<leftPen lineStyle="Solid"/>
+					<bottomPen lineStyle="Solid"/>
+					<rightPen lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="html">
+					<font size="7" isBold="false" pdfFontName="Helvetica-Bold" isPdfEmbedded="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{status}.equals("LATE")?"<b><font color=\"#ac5353\">"+$F{status}+"</font></b>":$F{status}.equals("Late")?"<b><font color=\"#ac5353\">"+$F{status}+"</font></b>":$F{status}.equals("ABSENT")?"<b><font color=\"red\">"+$F{status}+"</font></b>":$F{status}.equals("Absent")?"<b><font color=\"red\">"+$F{status}+"</font></b>":$F{status}.equals("ABSENT+")?"<b><font color=\"red\">"+$F{status}+"</font></b>":$F{status}.equals("EARLY_OUT")?"<b><font color=\"#C6DA00\">"+$F{status}+"</font></b>":$F{status}.equals("Early Gone")?"<b><font color=\"#C6DA00\">"+$F{status}+"</font></b>":$F{status}.equals("Holiday")?"<b><font color=\"GREEN\">"+$F{status}+"</font></b>":$F{status}.equals("ON_TOUR")?"<b><font color=\"GREEN\">"+$F{status}+"</font></b>":$F{status}.equals("AL")?"<b><font color=\"GREEN\">"+$F{status}+"</font></b>":$F{status}.equals("CL")?"<b><font color=\"GREEN\">"+$F{status}+"</font></b>":$F{status}.equals("ML")?"<b><font color=\"GREEN\">"+$F{status}+"</font></b>":$F{status}.equals("Medical Leave")?"<b><font color=\"GREEN\">"+$F{status}+"</font></b>":$F{status}.equals("WEEKEND")?"<b><font color=\"#007C80\">"+$F{status}+"</font></b>":$F{status}.equals("Late And Early Gone")?"<b><font color=\"#ff8000\">"+$F{status}+"</font></b>":$F{status}.equals("Weekend")?"<b><font color=\"#007C80\">"+$F{status}+"</font></b>":$F{status}.replace( '_', ' ' )]]></textFieldExpression>
+			</textField>
+			<textField pattern="h:mm:ss a " isBlankWhenNull="true">
+				<reportElement x="231" y="0" width="60" height="9" uuid="416986a2-3965-43a3-ba09-5b7efd95c1ca">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<box leftPadding="3">
+					<pen lineWidth="0.25" lineStyle="Solid" lineColor="#050505"/>
+					<topPen lineStyle="Solid"/>
+					<leftPen lineStyle="Solid"/>
+					<bottomPen lineStyle="Solid"/>
+					<rightPen lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7" isBold="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{in_time}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true">
+				<reportElement x="231" y="9" width="60" height="9" uuid="e594b1fc-7680-4406-ae5f-54c2e45e3394">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.25" lineStyle="Solid" lineColor="#050505"/>
+					<topPen lineStyle="Solid"/>
+					<leftPen lineStyle="Solid"/>
+					<bottomPen lineStyle="Solid"/>
+					<rightPen lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{attn_date}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true">
+				<reportElement x="291" y="9" width="55" height="9" uuid="8515aa94-a1be-4e76-8b82-9a682b5a9e0f">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.25" lineStyle="Solid" lineColor="#050505"/>
+					<topPen lineStyle="Solid"/>
+					<leftPen lineStyle="Solid"/>
+					<bottomPen lineStyle="Solid"/>
+					<rightPen lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{attn_date}]]></textFieldExpression>
+			</textField>
+			<textField pattern="h:mm:ss " isBlankWhenNull="true">
+				<reportElement x="346" y="0" width="49" height="18" uuid="3f9d43e5-b02b-4bcc-b288-702db8974caf">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				</reportElement>
+				<box rightPadding="3">
+					<pen lineWidth="0.25" lineStyle="Solid" lineColor="#050505"/>
+					<topPen lineStyle="Solid"/>
+					<leftPen lineStyle="Solid"/>
+					<bottomPen lineStyle="Solid"/>
+					<rightPen lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7" isBold="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{get_day_diff}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="395" y="0" width="65" height="18" uuid="7b687679-178d-4bbe-aab4-5b3684c8e437">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				</reportElement>
+				<box rightPadding="3">
+					<pen lineWidth="0.25" lineStyle="Solid" lineColor="#050505"/>
+					<topPen lineStyle="Solid"/>
+					<leftPen lineStyle="Solid"/>
+					<bottomPen lineStyle="Solid"/>
+					<rightPen lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7" isBold="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{out_time}.getTime()>$F{shift_out_time}.getTime()?((($F{out_time}.getTime() - $F{shift_out_time}.getTime()) / 3600000)+"h "+ (((($F{out_time}.getTime() - $F{shift_out_time}.getTime())  % 3600000) / 60000))+"m "+(((($F{out_time}.getTime() - $F{shift_out_time}.getTime()) % 3600000) % 60000)/1000)+"s"):00]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="460" y="0" width="76" height="18" uuid="a6d38dd7-8f0d-4da7-b7f6-dacbb4979ee4"/>
+				<box leftPadding="3">
+					<pen lineWidth="0.25" lineStyle="Solid" lineColor="#050505"/>
+					<topPen lineStyle="Solid"/>
+					<leftPen lineStyle="Solid"/>
+					<bottomPen lineStyle="Solid"/>
+					<rightPen lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7" isBold="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{remarks}]]></textFieldExpression>
+			</textField>
+			<textField pattern="h:mm:ss a " isBlankWhenNull="true">
+				<reportElement x="291" y="0" width="55" height="9" uuid="c72851b3-a16a-43f7-a6cc-89ff7324b664">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				</reportElement>
+				<box leftPadding="3">
+					<pen lineWidth="0.25" lineStyle="Solid" lineColor="#050505"/>
+					<topPen lineStyle="Solid"/>
+					<leftPen lineStyle="Solid"/>
+					<bottomPen lineStyle="Solid"/>
+					<rightPen lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7" isBold="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{out_time}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="19" splitType="Stretch">
+			<staticText>
+				<reportElement stretchType="RelativeToTallestObject" x="10" y="5" width="278" height="14" uuid="a62b7f42-5156-4ea1-98d6-cf2570183d27"/>
+				<box leftPadding="0"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Design and developed by: Walton Digi-Tech Ind. Ltd.]]></text>
+			</staticText>
+			<line>
+				<reportElement x="10" y="2" width="525" height="1" uuid="122bb1bb-3af9-4636-b57f-8726f9a7a623"/>
+				<graphicElement>
+					<pen lineWidth="0.25"/>
+				</graphicElement>
+			</line>
+			<textField>
+				<reportElement x="392" y="2" width="128" height="17" uuid="dd0fcce6-4943-4c85-9155-97e0b4993d03">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="8"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Page "+$V{PAGE_NUMBER}+" of"]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement x="520" y="2" width="16" height="17" uuid="6f48f197-a603-4b26-91d3-8078122769d5"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="8"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[" "+$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<summary>
+		<band height="52" splitType="Immediate">
+			<subreport>
+				<reportElement x="130" y="25" width="76" height="14" uuid="5455e9d1-3474-4080-a391-46ba86ebb1ff">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<subreportParameter name="P_END_DATE">
+					<subreportParameterExpression><![CDATA[$P{P_END_DATE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_EMP_CODES">
+					<subreportParameterExpression><![CDATA[$P{P_EMP_CODES}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_START_DATE">
+					<subreportParameterExpression><![CDATA[$P{P_START_DATE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA[$P{SUBREPORT_DIR} + "bill_verification_report_subreport.jasper"]]></subreportExpression>
+			</subreport>
+			<textField isBlankWhenNull="true">
+				<reportElement mode="Opaque" x="395" y="2" width="65" height="18" backcolor="#E6E6E6" uuid="2e43d23b-8faa-44c0-bfb8-881c54bfbc5d">
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<box rightPadding="3">
+					<pen lineWidth="0.25" lineStyle="Solid" lineColor="#050505"/>
+					<topPen lineStyle="Solid"/>
+					<leftPen lineStyle="Solid"/>
+					<bottomPen lineStyle="Solid"/>
+					<rightPen lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7" isBold="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($V{TOTAL_OT_SUM}/ 3600000)+"h "+ (($V{TOTAL_OT_SUM}  % 3600000) / 60000)+"m "+((($V{TOTAL_OT_SUM} % 3600000) % 60000)/1000)+"s"]]></textFieldExpression>
+			</textField>
+			<textField pattern="h:mm:ss " isBlankWhenNull="true">
+				<reportElement mode="Opaque" x="346" y="2" width="49" height="18" backcolor="#E6E6E6" uuid="6b7b9882-bfef-47f7-adc1-9c4d3bfc4876">
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				</reportElement>
+				<box rightPadding="3">
+					<pen lineWidth="0.25" lineStyle="Solid" lineColor="#050505"/>
+					<topPen lineStyle="Solid"/>
+					<leftPen lineStyle="Solid"/>
+					<bottomPen lineStyle="Solid"/>
+					<rightPen lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7" isBold="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($V{TOTAL_WORK_TIME_SUM}/3600000)+"h "+ (($V{TOTAL_WORK_TIME_SUM}% 3600000) / 60000)+"m "+((($V{TOTAL_WORK_TIME_SUM} % 3600000) %60000)/1000)+"s"]]></textFieldExpression>
+			</textField>
+			<textField pattern="h:mm:ss " isBlankWhenNull="true">
+				<reportElement mode="Opaque" x="231" y="2" width="115" height="18" backcolor="#E6E6E6" uuid="26444d2b-6ebb-4762-891b-b44fd824e404">
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				</reportElement>
+				<box rightPadding="3">
+					<pen lineWidth="0.25" lineStyle="Solid" lineColor="#050505"/>
+					<topPen lineStyle="Solid"/>
+					<leftPen lineStyle="Solid"/>
+					<bottomPen lineStyle="Solid"/>
+					<rightPen lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7" isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Total"]]></textFieldExpression>
+			</textField>
+			<textField pattern="h:mm:ss " isBlankWhenNull="true">
+				<reportElement mode="Opaque" x="460" y="2" width="76" height="18" backcolor="#E6E6E6" uuid="d49c8609-004a-4f3d-8af7-d7749cab1c61">
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				</reportElement>
+				<box rightPadding="3">
+					<pen lineWidth="0.25" lineStyle="Solid" lineColor="#050505"/>
+					<topPen lineStyle="Solid"/>
+					<leftPen lineStyle="Solid"/>
+					<bottomPen lineStyle="Solid"/>
+					<rightPen lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7" isBold="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+			</textField>
+			<textField pattern="h:mm:ss " isBlankWhenNull="true">
+				<reportElement mode="Opaque" x="10" y="2" width="221" height="18" backcolor="#E6E6E6" uuid="ebca8842-887a-4ab7-8b83-60514607f979">
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				</reportElement>
+				<box rightPadding="3">
+					<pen lineWidth="0.25" lineStyle="Solid" lineColor="#050505"/>
+					<topPen lineStyle="Solid"/>
+					<leftPen lineStyle="Solid"/>
+					<bottomPen lineStyle="Solid"/>
+					<rightPen lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7" isBold="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

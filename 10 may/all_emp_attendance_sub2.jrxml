@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 7.9.0.final using JasperReports Library version 6.16.0-48579d909b7943b64690c65c71e07e0b80981928  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="employee_wise_daily_punch_status_sub_1" pageWidth="266" pageHeight="100" columnWidth="266" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="956d1568-513f-4cad-afce-8fd741feb32b">
+	<property name="ireport.zoom" value="2.357947691000002"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="HRMS-TEST"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<parameter name="P_START_DATE" class="java.lang.String">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="P_END_DATE" class="java.lang.String">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="P_EMP_CODES" class="java.util.Collection">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT 1 OITH, NVL(M.ATTN_DAY_STS_FINAL_TYPE,M.ATTN_DAY_STS_TYPE)STATUS,
+                   COUNT (NVL(M.ATTN_DAY_STS_FINAL_TYPE,M.ATTN_DAY_STS_TYPE) ) TOTAL_STS
+              FROM PROC_OUT_DT_ATTN M, hr_cr_emp_primary_assgnmnt E
+             WHERE 1 = 1 AND E.hr_cr_emp_id = M.HR_CR_EMP_ID
+                   AND ATTN_DATE BETWEEN TO_DATE ($P{P_START_DATE}, 'yyyy-MM-DD')
+                                     AND TO_DATE ($P{P_END_DATE},  'yyyy-MM-DD')
+                                     
+                    AND ($X{IN,e.emp_code,P_EMP_CODES})
+                   AND NVL(M.ATTN_DAY_STS_FINAL_TYPE,M.ATTN_DAY_STS_TYPE) NOT IN ('LATE', 'PRESENT', 'EARLY_GONE','ON_TOUR','FULL_DAY','PARTIAL_PRESENT')
+          GROUP BY E.hr_cr_emp_id, NVL(M.ATTN_DAY_STS_FINAL_TYPE,M.ATTN_DAY_STS_TYPE)]]>
+	</queryString>
+	<field name="oith" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.name" value="oith"/>
+		<property name="com.jaspersoft.studio.field.label" value="oith"/>
+	</field>
+	<field name="status" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="status"/>
+		<property name="com.jaspersoft.studio.field.label" value="status"/>
+	</field>
+	<field name="total_sts" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.name" value="total_sts"/>
+		<property name="com.jaspersoft.studio.field.label" value="total_sts"/>
+	</field>
+	<variable name="TOTAL_OUT" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{total_sts}]]></variableExpression>
+	</variable>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<columnHeader>
+		<band height="22" splitType="Stretch">
+			<staticText>
+				<reportElement mode="Opaque" x="26" y="11" width="111" height="11" forecolor="#080707" backcolor="#D1D0CE" uuid="6265504b-a6c3-4d68-b336-56210485f599"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7" isBold="true"/>
+				</textElement>
+				<text><![CDATA[STATUS]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="137" y="11" width="109" height="11" forecolor="#080707" backcolor="#D1D0CE" uuid="e40edd0b-b536-4dd1-a5d4-5449fd972a5e"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7" isBold="true"/>
+				</textElement>
+				<text><![CDATA[TOTAL ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="26" y="0" width="220" height="11" forecolor="#080707" backcolor="#D1D0CE" uuid="9795ba06-7376-4bb6-8d66-112a0208d75e"/>
+				<box>
+					<pen lineWidth="0.25" lineColor="#030303"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7" isBold="true"/>
+				</textElement>
+				<text><![CDATA[OUT STATUS]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="12" splitType="Stretch">
+			<textField>
+				<reportElement x="26" y="0" width="111" height="12" uuid="549f4ea9-f62c-42b7-a5c9-46226416f6b1"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($F{status}+"").replace("_"," ")]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="137" y="0" width="109" height="12" uuid="5ae54031-7e8d-4bac-a100-8606abc0d80e"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{total_sts}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band height="12">
+			<textField>
+				<reportElement x="137" y="0" width="109" height="12" uuid="50fa8f37-cd0a-4e74-862a-628bdd4484ed"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{TOTAL_OUT}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="26" y="0" width="111" height="12" uuid="200276c5-50d5-4bb3-a3ac-0799d09fff35"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["TOTAL OUT"]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>
